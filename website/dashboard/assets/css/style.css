@@ -1,0 +1,48 @@
+﻿/*=======================================
+    SERVICE SECTION STYLES
+==================================================*/
+#services-inner {
+    padding-top:50px;
+    padding-bottom:40px;
+}
+
+.service-div {
+	width: 100%;
+	min-height: 100px;
+	background-color: rgba(201, 0, 0, 1);
+	box-shadow: none;
+	border: 0;
+    padding:20px;
+    margin-bottom:30px;
+    color:#fff;
+    font-size:16px;
+    padding-top: 45px;
+}
+.service-div > i {
+    color:#fff;
+}
+
+/*=======================================
+    STATS SECTION STYLES
+==================================================*/
+.stats-div {
+    text-align:center;
+    width: 100%;
+    min-height: 100px;
+    padding: 30px 20px 30px 20px;
+}
+
+.stats-div > h3 {
+    font-size:60px;
+    font-weight:900;
+}
+
+.c-blue {
+   background-color:rgba(201, 0, 0, 1);
+   color:#fff;
+}
+
+.c-yellow {
+   background-color:rgba(255, 204, 0, 1);
+   color:#000;
+}

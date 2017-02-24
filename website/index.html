@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="en">
+<!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!--[if IE]>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <![endif]-->
+    <title>Eve Online Market Data Mining & Analysing</title>
+    <!--REQUIRED STYLE SHEETS-->
+    <!-- BOOTSTRAP CORE STYLE CSS -->
+    <link href="assets/css/bootstrap.css" rel="stylesheet" />
+    <!-- FONTAWESOME STYLE CSS -->
+    <link href="assets/css/font-awesome.min.css" rel="stylesheet" />
+    <!--ANIMATED FONTAWESOME STYLE CSS -->
+    <link href="assets/css/font-awesome-animation.css" rel="stylesheet" />
+       <!-- CUSTOM STYLE CSS -->
+    <link href="assets/css/style.css" rel="stylesheet" />
+    <!-- GOOGLE FONT -->
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body >
+    <!-- NAV SECTION -->
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">eve.beards.technology</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="#home-sec">HOME</a></li>
+                    <li><a href="#services-sec">SERVICES</a></li>
+                    <li><a href="#contact-sec">CONTACT</a></li>
+					<li><a href="dashboard/index.php">DASHBOARD</a></li>
+                </ul>
+            </div>
+           
+        </div>
+    </div>
+     <!--END NAV SECTION -->
+	 
+    <!--HOME SECTION-->
+    <div id="home-sec">
+   
+		<div class="container" id="home" >
+			<div class="row text-center">
+				<div class="col-md-12">
+					<span class="head-main">GET TRADING DONE FASTER</span>
+					<h2 class="head-sub-main">It take the right information at the right time!</h2>
+					<h3 class="head-last">Find it at: <i><a class="decLink" href="dashboard/index.html">https://eve.beards.technology/dashboard/</a></i></h3>
+				</div>
+			</div>
+		</div>
+	
+    </div>
+    <!--END HOME SECTION-->
+   
+    <!--SERVICES SECTION-->    
+    <section  id="services-sec">
+        <div class="container">
+            <div class="row ">
+                <h1>OUR SERVICES:</h1>
+                 <div class="col-md-12 g-pad-bottom">
+                  <div class="col-md-6">
+                    <h2>Data Mining done for you!</h2>
+                    <p>
+                        We mine the Eve Online CREST API to gather the following data: <i>buy prices, sell prices, buy quantities, sell quantities & region</i>. We in general grab 50% of all orders we mine up to a maximum of 10. Based on this we calculate the lowest price, highest price and average price. This data is saved into our database for later usage.        
+                    </p>
+                      </div>
+                 <div class="col-md-6">
+                    <h2>Data Analysis done for you!</h2>
+                    <p>
+                        Besides mining we also analyse the data and provide insight into deals you could make while station trading! We calculate averages, weighted averages, margins, regional averages for prices that are more accurate versus the in-game averages and much more. 
+                    </p>
+                      </div>
+                     </div>
+               
+                <div class="col-md-12 text-center">
+                    <div class="col-md-4 ">
+                        <div class="service-div">
+                            <i class="fa fa-location-arrow fa-5x"></i>
+                            <h4>Trade hubs </h4>
+                            <p>
+                                We currently only analyse the <b>Jita</b> market. This because we are limited by the amount of requests we can do.
+                            </p>
+                             <p>
+                                In the future we hope to expand to more trade hubs of Eve Online.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 ">
+                        <div class="service-div">
+                            <i class="fa fa-handshake-o fa-5x"></i>
+                            <h4>Find the best deals </h4>
+                            <p>
+                                With our data mining and data analysing we can provide a list of potential good deals to trade in Eve Online! With our growing data and frequent recalculations we provide the most up to date information about the market.
+                            </p>
+                        </div>
+                    </div>
+                   
+                    <div class="col-md-4">
+                        <div class="service-div">
+                            <i class="fa fa-bar-chart fa-5x"></i>
+                            <h4>Different kinds of charts </h4>
+                            <p>
+                                We provide different kinds of charts to help visualize the data we use for our calculations and help you decide on the best trade. We provide: <i>pie charts, bar charts and line charts.</i>
+                            </p><p></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12 g-pad-bottom">
+                  <div class="col-md-12">
+                    <h2>Predictive Analytics done for you!</h2>
+                    <p>
+                        Aside from data mining and data analysis, we also do some predictive analytics. We got the data already and we know when we got the data since we track it ourselves. With our tools we can provide insight into the sell price of an item a week from now. With our regular updates and continuous data mining this prediction is also updated to keep the prediction as accurate as possible and have it move with changes is something sudden happens.            
+                    </p>
+                      </div>
+                 
+                     </div>
+            </div>
+        </div>
+    </section>
+    <!--END SERVICES SECTION-->
+	
+    <!--STATS SECTION-->
+    <section class="c-blue">
+        <div class="container">
+            <div class="row ">
+			
+                <div class="col-md-4 ">
+                    <div class="stats-div">
+                        <h3>11000+ </h3>
+                        <h4>Tracked items</h4>
+                    </div>
+                </div>
+				
+                <div class="col-md-4 ">
+                    <div class="stats-div">
+                        <h3>5 min. </h3>
+                        <h4>Update intervals</h4>
+                    </div>
+                </div>
+				
+                <div class="col-md-4 ">
+                    <div class="stats-div">
+                        <h3>Top 100</h3>
+                        <h4>Best items to trade</h4>
+                    </div>
+                </div>
+				
+            </div>
+        </div>
+    </section>
+    <!--END STATS SECTION-->
+
+    <!--CONTACT SECTION-->
+    
+    <section class="c-white"  id="contact-sec">
+        <div class="container">
+             
+            <div class="row">
+                 <h1>Contact Us :</h1>
+                  <div class="col-md-12 g-pad-bottom">
+                  <div class="col-md-6">
+                    <h2>Got any questions?</h2>
+                    <p>
+                        If you got any questions feel free to contact us by using the form below. Please be kind enough to provide as much as information as possible as this will allow us to help you the most. If we lack information getting your question answered might take longer.</p>
+                      </div>
+                 <div class="col-md-6">
+                    <h2>Want to support us?</h2>
+                    <p>
+                        Getting some support is always great! Just contact us in-game or sent us an email. Just sending us a thank you can already make a huge difference!
+                    </p>
+                      </div>
+                     </div>
+                <div class="col-md-6">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-6">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" required="required" placeholder="Name">
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" required="required" placeholder="Email address">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 col-sm-12">
+                                <div class="form-group">
+                                    <textarea name="message" id="message" required="required" class="form-control" rows="3" placeholder="Message"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <p>
+                   <strong>In-game name:</strong>  Decimus King <br />
+                 <strong>Email:</strong>  contact@beards.technology <br />
+                          <strong>Web:</strong>  https://eve.beards.technology/ <br />
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!--END CONTACT SECTION-->
+
+    <!-- SOCIAL STATS SECTION-->
+    <section>
+        <div class="container">
+            
+        </div>
+    </section>
+    <!-- END SOCIAL STATS SECTION-->
+
+    <!--FOOTER SECTION -->
+    <div id="footer">
+        https://eve.beards.technology/ | owned by: https://beards.technology/
+         
+    </div>
+    <!-- END FOOTER SECTION -->
+
+    <!-- JAVASCRIPT FILES PLACED AT THE BOTTOM TO REDUCE THE LOADING TIME  -->
+    <!-- CORE JQUERY  -->
+    <script src="assets/plugins/jquery-1.10.2.js"></script>
+    <!-- BOOTSTRAP CORE SCRIPT   -->
+    <script src="assets/plugins/bootstrap.js"></script>
+  
+    <!-- CUSTOM SCRIPTS -->
+    <script src="assets/js/custom.js"></script>
+
+</body>
+</html>
