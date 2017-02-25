@@ -14,8 +14,8 @@ import configparser
 
 Config = configparser.ConfigParser()
 #Config.read('../config/example.ini')
-#Config.read('../config/dev.ini')
-Config.read('/home/jan/eve.beards.technology/python/miner/config/test.ini')
+Config.read('../config/dev.ini')
+#Config.read('/home/jan/eve.beards.technology/python/miner/config/test.ini')
 #Config.read('../config/prod.ini')
 
 logging.basicConfig(filename=Config.get('Logging', 'logLocation'),level=logging.INFO)
@@ -28,6 +28,7 @@ poolSize = Config.get('Settings', 'ProcessPool')
 base_url='https://crest-tq.eveonline.com/market/{}/orders/all/'
 add_item='INSERT INTO Data (QuantityBuy, AvgBuy, WeightedBuy, HighBuy, LowBuy, QuantitySell, AvgSell, WeightedSell, LowSell, HighSell, typeID, regionID) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
 get_id='SELECT ID FROM Regions'
+tupleList = []
 
 # calculate all needed values
 def calculate(json):
@@ -61,23 +62,15 @@ def calculate(json):
         print('>>>>> END OF TRACEBACK <<<<<')
         pass
 
-def writeDB(buyResults, sellResults, item, region):
+def writeList(buyResults, sellResults, item, region):
     try:
-        # start database connection (localhost)
-        cnx = dbcon.connect(user='%s' % (username), password='%s' % (password), database='%s' % (database_name))
-        cursor = cnx.cursor()
-
-        #write db interactions here
+        #write list interactions here
         buyTuple = calculate(buyResults)
         sellTuple = calculate(sellResults)
         idTuple = (item, region)
+        returnTuple = (buyTuple + sellTuple + idTuple)
 
-        cursor.execute(add_item, buyTuple + sellTuple + idTuple)
-
-        # clean up
-        cnx.commit()
-        cursor.close()
-        cnx.close()
+        return returnTuple
     except:
         logging.error('>>>>> START OF TRACEBACK <<<<<')
         logging.error('Error encountered during data processing: ')
@@ -94,7 +87,7 @@ def checkID(argsTuple):
             sellResults = [item for item in tmpList if item['buy'] == False]
             buyResults = sorted(buyResults, key=lambda k: int(k['price']), reverse=True)
             sellResults = sorted(sellResults, key=lambda k: int(k['price']), reverse=False)
-            writeDB(buyResults, sellResults,tmpList[0]['type'], regId)
+            return writeList(buyResults, sellResults,tmpList[0]['type'], regId)
     except:
         print('>>>>> START OF TRACEBACK <<<<<')
         print('Error encountered during data processing: ')
@@ -106,11 +99,14 @@ def checkID(argsTuple):
 def groupData(jsonItems, regId):
     jsonItems['items'] = sorted(jsonItems['items'], key=lambda x: (x['type'], x['buy'], x['price']))
 
-    # start multi process tasks
-    executor = concurrent.futures.ProcessPoolExecutor(int(poolSize))
-    futures = [executor.submit(checkID, (list(item), regId)) for key, item in groupby(jsonItems['items'], lambda x: x['type'])]
-    concurrent.futures.wait(futures)
-
+    with concurrent.futures.ThreadPoolExecutor(int(poolSize)) as executor:
+        future_to_data = {executor.submit(checkID, (list(item), regId)) for key, item in groupby(jsonItems['items'], lambda x: x['type'])}
+        for future in concurrent.futures.as_completed(future_to_data):
+            try:
+                tupleList.append(future.result())
+            except Exception as exc:
+                logging.error('Somethign went wront with the processes')
+        
 #get data from CREST api
 def mineData(regId):
     # get page count to make future resilient
@@ -152,6 +148,19 @@ def getRegions():
     
     return ids
 
+def writeDB():
+    # start database connection (localhost)
+    cnx = dbcon.connect(user='%s' % (username), password='%s' % (password), database='%s' % (database_name))
+    cursor = cnx.cursor()
+
+    for tupl in tupleList:
+        cursor.execute(add_item, tupl)
+
+    # close connection
+    cnx.commit()
+    cursor.close()
+    cnx.close()
+
 def main():
     start = time.time()
     #os.sched_setaffinity(0, {0, 1})
@@ -160,6 +169,7 @@ def main():
     for region in getRegions():
         logging.info('Started mining and processing: {}'.format(region))
         mineData(region)
+    writeDB()
     end = time.time()
     logging.info('Run took: {}'.format(end - start))
 
