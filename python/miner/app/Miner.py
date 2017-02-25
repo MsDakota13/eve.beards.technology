@@ -10,17 +10,23 @@ import os
 from itertools import groupby
 import time
 import logging
+import configparser
 
-# base variables
-#username='ReadUser'
-#password='L3g0l4s,'
-username='root'
-password='Cetan@13'
-database_name='Eve Online'
+Config = configparser.ConfigParser()
+#Config.read('../config/example.ini')
+Config.read('../config/dev.ini')
+#Config.read('../config/prod.ini')
+
+logging.basicConfig(filename=Config.get('Logging', 'logLocation'),level=logging.INFO)
+
+username = Config.get('Database', 'username')
+password = Config.get('Database', 'password')
+database_name = Config.get('Database', 'database_name')
+poolSize = Config.get('Settings', 'ProcessPool')
+
 base_url='https://crest-tq.eveonline.com/market/{}/orders/all/'
 add_item='INSERT INTO Data (QuantityBuy, AvgBuy, WeightedBuy, HighBuy, LowBuy, QuantitySell, AvgSell, WeightedSell, LowSell, HighSell, typeID, regionID) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
 get_id='SELECT ID FROM Regions'
-logging.basicConfig(filename='/var/log/Miner.log',level=logging.INFO)
 
 # calculate all needed values
 def calculate(json):
@@ -104,7 +110,7 @@ def groupData(jsonItems, regId):
     print('Number of cores: {}'.format(len(os.sched_getaffinity(0))))
 
     # start multi process tasks
-    executor = concurrent.futures.ProcessPoolExecutor(50)
+    executor = concurrent.futures.ProcessPoolExecutor(int(poolSize))
     futures = [executor.submit(checkID, (list(item), regId)) for key, item in groupby(jsonItems['items'], lambda x: x['type'])]
     concurrent.futures.wait(futures)
 
@@ -149,10 +155,13 @@ def getRegions():
     
     return ids
 
-start = time.time()
-logging.info('Run started on: {}'.format(time.ctime(start)))
-for region in getRegions():
-    logging.info('Started mining and processing: {}'.format(region))
-    mineData(region)
-end = time.time()
-logging.info('Run took: {}'.format(end - start))
+def main():
+    start = time.time()
+    logging.info('Run started on: {}'.format(time.ctime(start)))
+    for region in getRegions():
+        logging.info('Started mining and processing: {}'.format(region))
+        mineData(region)
+    end = time.time()
+    logging.info('Run took: {}'.format(end - start))
+
+main()
