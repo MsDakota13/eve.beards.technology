@@ -8,3 +8,6 @@
 2. https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-phpmyadmin-on-ubuntu-12-04
 3. https://www.percona.com/blog/2006/09/29/what-to-tune-in-mysql-server-after-installation/
 4. https://scotch.io/tutorials/getting-started-with-flask-a-python-microframework (remember to use python3 instead of python2)
+
+## Things to keep in mind:
+mysql not able to connect(too many conects and redirects): echo 1 > /proc/sys/net/ipv4/tcp_tw_reuse
