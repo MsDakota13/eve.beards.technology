@@ -15,7 +15,7 @@ import configparser
 Config = configparser.ConfigParser()
 #Config.read('../config/example.ini')
 #Config.read('../config/dev.ini')
-Config.read('../config/test.ini')
+Config.read('/home/jan/eve.beards.technology/python/miner/config/test.ini')
 #Config.read('../config/prod.ini')
 
 logging.basicConfig(filename=Config.get('Logging', 'logLocation'),level=logging.INFO)
