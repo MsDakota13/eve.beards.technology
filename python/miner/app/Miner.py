@@ -14,7 +14,8 @@ import configparser
 
 Config = configparser.ConfigParser()
 #Config.read('../config/example.ini')
-Config.read('../config/dev.ini')
+#Config.read('../config/dev.ini')
+Config.read('../config/test.ini')
 #Config.read('../config/prod.ini')
 
 logging.basicConfig(filename=Config.get('Logging', 'logLocation'),level=logging.INFO)
@@ -105,10 +106,6 @@ def checkID(argsTuple):
 def groupData(jsonItems, regId):
     jsonItems['items'] = sorted(jsonItems['items'], key=lambda x: (x['type'], x['buy'], x['price']))
 
-    # setup number of cores
-    #os.sched_setaffinity(0, {0, 1})
-    print('Number of cores: {}'.format(len(os.sched_getaffinity(0))))
-
     # start multi process tasks
     executor = concurrent.futures.ProcessPoolExecutor(int(poolSize))
     futures = [executor.submit(checkID, (list(item), regId)) for key, item in groupby(jsonItems['items'], lambda x: x['type'])]
@@ -157,6 +154,8 @@ def getRegions():
 
 def main():
     start = time.time()
+    #os.sched_setaffinity(0, {0, 1})
+    logging.info('Number of cores: {}'.format(len(os.sched_getaffinity(0))))
     logging.info('Run started on: {}'.format(time.ctime(start)))
     for region in getRegions():
         logging.info('Started mining and processing: {}'.format(region))
