@@ -15,8 +15,8 @@ import configparser
 Config = configparser.ConfigParser()
 #Config.read('../config/example.ini')
 #Config.read('../config/dev.ini')
-Config.read('/home/jan/eve.beards.technology/python/miner/config/test.ini')
-#Config.read('../config/prod.ini')
+#Config.read('/home/jan/eve.beards.technology/python/miner/config/test.ini')
+Config.read('/home/robertjan/eve.beards.technology/eve.beards.technology/python/miner/config/prod.ini')
 
 logging.basicConfig(filename=Config.get('Logging', 'logLocation'),level=logging.INFO)
 
@@ -149,6 +149,8 @@ def getRegions():
     return ids
 
 def writeDB():
+    start = time.time()
+
     # start database connection (localhost)
     cnx = dbcon.connect(user='%s' % (username), password='%s' % (password), database='%s' % (database_name))
     cursor = cnx.cursor()
@@ -160,6 +162,9 @@ def writeDB():
     cnx.commit()
     cursor.close()
     cnx.close()
+
+    end = time.time()
+    logging.info('Database writing took: {}'.format(end - start))
 
 def main():
     start = time.time()
