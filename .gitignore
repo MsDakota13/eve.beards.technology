@@ -1,2 +1,3 @@
 python/miner/config/dev.ini
 python/miner/config/prod.ini
+python/miner/config/test.ini
