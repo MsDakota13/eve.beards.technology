@@ -14,8 +14,8 @@ import configparser
 
 Config = configparser.ConfigParser()
 #Config.read('../config/example.ini')
-Config.read('../config/dev.ini')
-#Config.read('/home/jan/eve.beards.technology/python/miner/config/test.ini')
+#Config.read('../config/dev.ini')
+Config.read('/home/jan/eve.beards.technology/python/miner/config/test.ini')
 #Config.read('/home/robertjan/eve.beards.technology/eve.beards.technology/python/miner/config/prod.ini')
 
 logging.basicConfig(filename=Config.get('Logging', 'logLocation'),level=logging.INFO)
@@ -178,8 +178,8 @@ def writeDBTask(tuplList):
 def writeDB():
     start = time.time()
 
-    executor = concurrent.futures.ThreadPoolExecutor(5)
-    futures = [executor.submit(writeDBTask, tuplList) for tuplList in chunks(tupleList, 100)]
+    executor = concurrent.futures.ProcessPoolExecutor(5)
+    futures = [executor.submit(writeDBTask, tuplList) for tuplList in chunks(tupleList, math.ceil(len(tupleList)/5))]
     concurrent.futures.wait(futures)
 
     end = time.time()
