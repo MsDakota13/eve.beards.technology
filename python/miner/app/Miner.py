@@ -14,9 +14,9 @@ import configparser
 
 Config = configparser.ConfigParser()
 #Config.read('../config/example.ini')
-#Config.read('../config/dev.ini')
+Config.read('../config/dev.ini')
 #Config.read('/home/jan/eve.beards.technology/python/miner/config/test.ini')
-Config.read('/home/robertjan/eve.beards.technology/eve.beards.technology/python/miner/config/prod.ini')
+#Config.read('/home/robertjan/eve.beards.technology/eve.beards.technology/python/miner/config/prod.ini')
 
 logging.basicConfig(filename=Config.get('Logging', 'logLocation'),level=logging.INFO)
 
@@ -68,6 +68,16 @@ def writeList(buyResults, sellResults, item, region):
         buyTuple = calculate(buyResults)
         sellTuple = calculate(sellResults)
         idTuple = (item, region)
+
+        if buyTuple is None:
+            buyTuple = (0, 0, 0, 0, 0)
+
+        if sellTuple is None:
+            sellTuple =(0, 0, 0, 0, 0)
+
+        if idTuple is None:
+            logging.warning('Id: {}, region: {}'.format(item, region))
+
         returnTuple = (buyTuple + sellTuple + idTuple)
 
         return returnTuple
