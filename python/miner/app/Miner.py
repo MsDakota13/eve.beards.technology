@@ -158,20 +158,29 @@ def getRegions():
     
     return ids
 
-def writeDB():
-    start = time.time()
+def chunks(l, n):
+    for i in range(0, len(l), n):
+        yield l[i:i +n]
 
+def writeDBTask(tuplList):
     # start database connection (localhost)
     cnx = dbcon.connect(user='%s' % (username), password='%s' % (password), database='%s' % (database_name))
     cursor = cnx.cursor()
 
-    for tupl in tupleList:
+    for tupl in tuplList:
         cursor.execute(add_item, tupl)
 
     # close connection
     cnx.commit()
     cursor.close()
     cnx.close()
+
+def writeDB():
+    start = time.time()
+
+    executor = concurrent.futures.ThreadPoolExecutor(5)
+    futures = [executor.submit(writeDBTask, tuplList) for tuplList in chunks(tupleList, 100)]
+    concurrent.futures.wait(futures)
 
     end = time.time()
     logging.info('Database writing took: {}'.format(end - start))
