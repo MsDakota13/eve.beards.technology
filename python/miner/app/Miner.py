@@ -15,8 +15,8 @@ import configparser
 Config = configparser.ConfigParser()
 #Config.read('../config/example.ini')
 #Config.read('../config/dev.ini')
-Config.read('/home/jan/eve.beards.technology/python/miner/config/test.ini')
-#Config.read('/home/robertjan/eve.beards.technology/eve.beards.technology/python/miner/config/prod.ini')
+#Config.read('/home/jan/eve.beards.technology/python/miner/config/test.ini')
+Config.read('/home/robertjan/eve.beards.technology/eve.beards.technology/python/miner/config/prod.ini')
 
 logging.basicConfig(filename=Config.get('Logging', 'logLocation'),level=logging.INFO)
 
@@ -178,7 +178,7 @@ def writeDBTask(tuplList):
 def writeDB():
     start = time.time()
 
-    executor = concurrent.futures.ProcessPoolExecutor(5)
+    executor = concurrent.futures.ProcessPoolExecutor(int(poolSize))
     futures = [executor.submit(writeDBTask, tuplList) for tuplList in chunks(tupleList, math.ceil(len(tupleList)/5))]
     concurrent.futures.wait(futures)
 
@@ -187,8 +187,7 @@ def writeDB():
 
 def main():
     start = time.time()
-    #os.sched_setaffinity(0, {0, 1})
-    logging.info('Number of cores: {}'.format(len(os.sched_getaffinity(0))))
+    logging.info('Number of processes: {}'.format(poolSize))
     logging.info('Run started on: {}'.format(time.ctime(start)))
     for region in getRegions():
         logging.info('Started mining and processing: {}'.format(region))
