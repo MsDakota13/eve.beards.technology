@@ -12,188 +12,193 @@ import time
 import logging
 import configparser
 
-Config = configparser.ConfigParser()
-#Config.read('../config/example.ini')
-#Config.read('../config/dev.ini')
-#Config.read('/home/jan/eve.beards.technology/python/miner/config/test.ini')
-Config.read('/home/robertjan/eve.beards.technology/eve.beards.technology/python/miner/config/prod.ini')
+class Miner(object):
 
-logging.basicConfig(filename=Config.get('Logging', 'logLocation'),level=logging.INFO)
+    def __init__(self):
+        self.config = configparser.ConfigParser()
+        #self.config.read('../config/example.ini')
+        self.config.read('../config/dev.ini')
+        #self.config.read('/home/jan/eve.beards.technology/python/miner/config/test.ini')
+        #self.config.read('/home/robertjan/eve.beards.technology/eve.beards.technology/python/miner/config/prod.ini')
 
-username = Config.get('Database', 'username')
-password = Config.get('Database', 'password')
-database_name = Config.get('Database', 'database_name')
-poolSize = Config.get('Settings', 'ProcessPool')
+        logging.basicConfig(filename=self.config.get('Logging', 'logLocation'),level=logging.INFO)
 
-base_url='https://crest-tq.eveonline.com/market/{}/orders/all/'
-add_item='INSERT INTO Data (QuantityBuy, AvgBuy, WeightedBuy, HighBuy, LowBuy, QuantitySell, AvgSell, WeightedSell, LowSell, HighSell, typeID, regionID) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-get_id='SELECT ID FROM Regions'
-tupleList = []
+        self.username = self.config.get('Database', 'username')
+        self.password = self.config.get('Database', 'password')
+        self.database_name = self.config.get('Database', 'database_name')
+        self.poolSize = self.config.get('Settings', 'ProcessPool')
 
-# calculate all needed values
-def calculate(json):
-    try:
-        quantity = 0
-        priceTotal = 0
+        self.base_url='https://crest-tq.eveonline.com/market/{}/orders/all/'
+        self.add_item='INSERT INTO Data (QuantityBuy, AvgBuy, WeightedBuy, HighBuy, LowBuy, QuantitySell, AvgSell, WeightedSell, LowSell, HighSell, typeID, regionID) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        self.get_id='SELECT ID FROM Regions'
+        self.tupleList = []
 
-        # get half the list length and if longer then 10, if it is use 10 instead
-        jsonLength = int(math.ceil(len(json) / 2))
-        if jsonLength > 10:
-            jsonLength = 10
-        elif jsonLength == 0:
-            return (0, 0, 0, 0, 0)
+    # calculate all needed values
+    def calculate(self,json):
+        try:
+            quantity = 0
+            priceTotal = 0
 
-        # print results as test
-        for item in json[:jsonLength]:
-                quantity = quantity + item['volume']
-                priceTotal = priceTotal + item['price']
+            # get half the list length and if longer then 10, if it is use 10 instead
+            jsonLength = int(math.ceil(len(json) / 2))
+            if jsonLength > 10:
+                jsonLength = 10
+            elif jsonLength == 0:
+                return (0, 0, 0, 0, 0)
 
-        weightedAvg = 0
+            # print results as test
+            for item in json[:jsonLength]:
+                    quantity = quantity + item['volume']
+                    priceTotal = priceTotal + item['price']
 
-        #calc weighted
-        for item in json[:jsonLength]:
-                weightedAvg = weightedAvg + ((float(item['volume']) / quantity) * float(item['price']))
+            weightedAvg = 0
 
-        return (quantity, round(priceTotal/jsonLength, 2), round(weightedAvg, 2), json[0]['price'], json[jsonLength -1]['price'])
-    except:
-        print('>>>>> START OF TRACEBACK <<<<<')
-        print('Error encountered during data processing: ')
-        traceback.print_exc()
-        print('>>>>> END OF TRACEBACK <<<<<')
-        pass
+            #calc weighted
+            for item in json[:jsonLength]:
+                    weightedAvg = weightedAvg + ((float(item['volume']) / quantity) * float(item['price']))
 
-def writeList(buyResults, sellResults, item, region):
-    try:
-        #write list interactions here
-        buyTuple = calculate(buyResults)
-        sellTuple = calculate(sellResults)
-        idTuple = (item, region)
+            return (quantity, round(priceTotal/jsonLength, 2), round(weightedAvg, 2), json[0]['price'], json[jsonLength -1]['price'])
+        except:
+            print('>>>>> START OF TRACEBACK <<<<<')
+            print('Error encountered during data processing: ')
+            traceback.print_exc()
+            print('>>>>> END OF TRACEBACK <<<<<')
+            pass
 
-        if buyTuple is None:
-            buyTuple = (0, 0, 0, 0, 0)
+    def writeList(self, buyResults, sellResults, item, region):
+        try:
+            #write list interactions here
+            buyTuple = self.calculate(buyResults)
+            sellTuple = self.calculate(sellResults)
+            idTuple = (item, region)
 
-        if sellTuple is None:
-            sellTuple =(0, 0, 0, 0, 0)
+            if buyTuple is None:
+                buyTuple = (0, 0, 0, 0, 0)
 
-        if idTuple is None:
-            logging.warning('Id: {}, region: {}'.format(item, region))
+            if sellTuple is None:
+                sellTuple =(0, 0, 0, 0, 0)
 
-        returnTuple = (buyTuple + sellTuple + idTuple)
+            if idTuple is None:
+                logging.warning('Id: {}, region: {}'.format(item, region))
 
-        return returnTuple
-    except:
-        logging.error('>>>>> START OF TRACEBACK <<<<<')
-        logging.error('Error encountered during data processing: ')
-        logging.error('Following exception occured', exc_info=(traceback))
-        logging.error('>>>>> END OF TRACEBACK <<<<<')
-        pass
+            returnTuple = (buyTuple + sellTuple + idTuple)
 
-def checkID(argsTuple):
-    try:
-        tmpList = argsTuple[0]
-        regId = argsTuple[1]
-        if bool(tmpList):
-            buyResults = [item for item in tmpList if item['buy'] == True]
-            sellResults = [item for item in tmpList if item['buy'] == False]
-            buyResults = sorted(buyResults, key=lambda k: int(k['price']), reverse=True)
-            sellResults = sorted(sellResults, key=lambda k: int(k['price']), reverse=False)
-            return writeList(buyResults, sellResults,tmpList[0]['type'], regId)
-    except:
-        print('>>>>> START OF TRACEBACK <<<<<')
-        print('Error encountered during data processing: ')
-        traceback.print_exc()
-        print('>>>>> END OF TRACEBACK <<<<<')
-        pass
+            return returnTuple
+        except:
+            logging.error('>>>>> START OF TRACEBACK <<<<<')
+            logging.error('Error encountered during data processing: ')
+            logging.error('Following exception occured', exc_info=(traceback))
+            logging.error('>>>>> END OF TRACEBACK <<<<<')
+            pass
 
-#groups data retrieved from CREST api
-def groupData(jsonItems, regId):
-    jsonItems['items'] = sorted(jsonItems['items'], key=lambda x: (x['type'], x['buy'], x['price']))
+    def checkID(self,argsTuple):
+        try:
+            tmpList = argsTuple[0]
+            regId = argsTuple[1]
+            if bool(tmpList):
+                buyResults = [item for item in tmpList if item['buy'] == True]
+                sellResults = [item for item in tmpList if item['buy'] == False]
+                buyResults = sorted(buyResults, key=lambda k: int(k['price']), reverse=True)
+                sellResults = sorted(sellResults, key=lambda k: int(k['price']), reverse=False)
+                return self.writeList(buyResults, sellResults,tmpList[0]['type'], regId)
+        except:
+            print('>>>>> START OF TRACEBACK <<<<<')
+            print('Error encountered during data processing: ')
+            traceback.print_exc()
+            print('>>>>> END OF TRACEBACK <<<<<')
+            pass
 
-    with concurrent.futures.ThreadPoolExecutor(int(poolSize)) as executor:
-        future_to_data = {executor.submit(checkID, (list(item), regId)) for key, item in groupby(jsonItems['items'], lambda x: x['type'])}
-        for future in concurrent.futures.as_completed(future_to_data):
-            try:
-                tupleList.append(future.result())
-            except Exception as exc:
-                logging.error('Somethign went wront with the processes')
+    #groups data retrieved from CREST api
+    def groupData(self,jsonItems, regId):
+        jsonItems['items'] = sorted(jsonItems['items'], key=lambda x: (x['type'], x['buy'], x['price']))
+
+        with concurrent.futures.ThreadPoolExecutor(int(self.poolSize)) as executor:
+            future_to_data = {executor.submit(self.checkID, (list(item), regId)) for key, item in groupby(jsonItems['items'], lambda x: x['type'])}
+            for future in concurrent.futures.as_completed(future_to_data):
+                try:
+                    self.tupleList.append(future.result())
+                except Exception as exc:
+                    logging.error('Somethign went wront with the processes')
+            
+    #get data from CREST api
+    def mineData(self,regId):
+        # get page count to make future resilient
+        resp = requests.get(self.base_url.format(regId))
+        if resp.status_code != 200:
+            raise ApiError('GET /market/{}/orders/all/ {}'.format(regId, resp.status_code))
+        pageCount = resp.json()['pageCount']
+        jsonItems = resp.json()
+
+        # start loop to get all data
+        for x in range(1, pageCount + 1):
+                url = '{}?page={}'.format(self.base_url.format(regId), x)
+                resp = requests.get(url)
+                if resp.status_code != 200:
+                    raise ApiError('GET {} {}'.format(url, resp.status_code))
+                jsonItems['items'] = jsonItems['items'] + resp.json()['items']
         
-#get data from CREST api
-def mineData(regId):
-    # get page count to make future resilient
-    resp = requests.get(base_url.format(regId))
-    if resp.status_code != 200:
-        raise ApiError('GET /market/{}/orders/all/ {}'.format(regId, resp.status_code))
-    pageCount = resp.json()['pageCount']
-    jsonItems = resp.json()
+        #(int(), int()) use tuple for multiple key values
+        jsonItems['items'] = sorted(jsonItems['items'], key=lambda k: (int(k['type']),int(k['buy']),int(k['price'])))
 
-    # start loop to get all data
-    for x in range(1, pageCount + 1):
-	    url = '{}?page={}'.format(base_url.format(regId), x)
-	    resp = requests.get(url)
-	    if resp.status_code != 200:
-                raise ApiError('GET {} {}'.format(url, resp.status_code))
-	    jsonItems['items'] = jsonItems['items'] + resp.json()['items']
-    
-    #(int(), int()) use tuple for multiple key values
-    jsonItems['items'] = sorted(jsonItems['items'], key=lambda k: (int(k['type']),int(k['buy']),int(k['price'])))
+        #process data
+        self.groupData(jsonItems, regId)
 
-    #process data
-    groupData(jsonItems, regId)
+    def getRegions(self):
+        # setup connection for query
+        cnx = dbcon.connect(user='%s' % (self.username), password='%s' % (self.password), database='%s' % (self.database_name))
+        cursor = cnx.cursor()
 
-def getRegions():
-    # setup connection for query
-    cnx = dbcon.connect(user='%s' % (username), password='%s' % (password), database='%s' % (database_name))
-    cursor = cnx.cursor()
+        #process data
+        cursor.execute(self.get_id)
+        ids = []
+        for tid in cursor:
+           ids.append(str(*tid))
 
-    #process data
-    cursor.execute(get_id)
-    ids = []
-    for tid in cursor:
-       ids.append(str(*tid))
+        # close connection
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+        
+        return ids
 
-    # close connection
-    cnx.commit()
-    cursor.close()
-    cnx.close()
-    
-    return ids
+    def chunks(self, l, n):
+        for i in range(0, len(l), n):
+            yield l[i:i +n]
 
-def chunks(l, n):
-    for i in range(0, len(l), n):
-        yield l[i:i +n]
+    def writeDBTask(self,tuplList):
+        # start database connection (localhost)
+        cnx = dbcon.connect(user='%s' % (self.username), password='%s' % (self.password), database='%s' % (self.database_name))
+        cursor = cnx.cursor()
 
-def writeDBTask(tuplList):
-    # start database connection (localhost)
-    cnx = dbcon.connect(user='%s' % (username), password='%s' % (password), database='%s' % (database_name))
-    cursor = cnx.cursor()
+        for tupl in tuplList:
+            cursor.execute(self.add_item, tupl)
 
-    for tupl in tuplList:
-        cursor.execute(add_item, tupl)
+        # close connection
+        cnx.commit()
+        cursor.close()
+        cnx.close()
 
-    # close connection
-    cnx.commit()
-    cursor.close()
-    cnx.close()
+    def writeDB(self):
+        start = time.time()
 
-def writeDB():
-    start = time.time()
+        executor = concurrent.futures.ProcessPoolExecutor(int(self.poolSize))
+        futures = [executor.submit(self.writeDBTask, tuplList) for tuplList in self.chunks(self.tupleList, math.ceil(len(self.tupleList)/5))]
+        concurrent.futures.wait(futures)
 
-    executor = concurrent.futures.ProcessPoolExecutor(int(poolSize))
-    futures = [executor.submit(writeDBTask, tuplList) for tuplList in chunks(tupleList, math.ceil(len(tupleList)/5))]
-    concurrent.futures.wait(futures)
+        end = time.time()
+        logging.info('Database writing took: {}'.format(end - start))
 
-    end = time.time()
-    logging.info('Database writing took: {}'.format(end - start))
+    def run(self):
+        start = time.time()
+        logging.info('Number of processes: {}'.format(self.poolSize))
+        logging.info('Run started on: {}'.format(time.ctime(start)))
+        for region in self.getRegions():
+            logging.info('Started mining and processing: {}'.format(region))
+            self.mineData(region)
+        self.writeDB()
+        end = time.time()
+        logging.info('Run took: {}'.format(end - start))
 
-def main():
-    start = time.time()
-    logging.info('Number of processes: {}'.format(poolSize))
-    logging.info('Run started on: {}'.format(time.ctime(start)))
-    for region in getRegions():
-        logging.info('Started mining and processing: {}'.format(region))
-        mineData(region)
-    writeDB()
-    end = time.time()
-    logging.info('Run took: {}'.format(end - start))
-
-main()
+if __name__ == "__main__":
+    miner = Miner()
+    miner.run()
