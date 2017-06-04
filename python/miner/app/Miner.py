@@ -35,78 +35,54 @@ class Miner(object):
 
     # calculate all needed values
     def calculate(self,json):
-        try:
-            quantity = 0
-            priceTotal = 0
+        quantity = 0
+        priceTotal = 0
 
-            # get half the list length and if longer then 10, if it is use 10 instead
-            jsonLength = int(math.ceil(len(json) / 2))
-            if jsonLength > 10:
-                jsonLength = 10
-            elif jsonLength == 0:
-                return (0, 0, 0, 0, 0)
+        # get half the list length and if longer then 10, if it is use 10 instead
+        jsonLength = int(math.ceil(len(json) / 2))
+        if jsonLength > 10:
+            jsonLength = 10
+        elif jsonLength == 0:
+            return (0, 0, 0, 0, 0)
 
-            # print results as test
-            for item in json[:jsonLength]:
-                    quantity = quantity + item['volume']
-                    priceTotal = priceTotal + item['price']
+        # print results as test
+        for item in json[:jsonLength]:
+                quantity = quantity + item['volume']
+                priceTotal = priceTotal + item['price']
 
-            weightedAvg = 0
+        weightedAvg = 0
 
-            #calc weighted
-            for item in json[:jsonLength]:
-                    weightedAvg = weightedAvg + ((float(item['volume']) / quantity) * float(item['price']))
+        #calc weighted
+        for item in json[:jsonLength]:
+                weightedAvg = weightedAvg + ((float(item['volume']) / quantity) * float(item['price']))
 
-            return (quantity, round(priceTotal/jsonLength, 2), round(weightedAvg, 2), json[0]['price'], json[jsonLength -1]['price'])
-        except:
-            print('>>>>> START OF TRACEBACK <<<<<')
-            print('Error encountered during data processing: ')
-            traceback.print_exc()
-            print('>>>>> END OF TRACEBACK <<<<<')
-            pass
+        return (quantity, round(priceTotal/jsonLength, 2), round(weightedAvg, 2), json[0]['price'], json[jsonLength -1]['price'])
 
     def writeList(self, buyResults, sellResults, item, region):
-        try:
-            #write list interactions here
-            buyTuple = self.calculate(buyResults)
-            sellTuple = self.calculate(sellResults)
-            idTuple = (item, region)
+        #write list interactions here
+        buyTuple = self.calculate(buyResults)
+        sellTuple = self.calculate(sellResults)
+        idTuple = (item, region)
 
-            if buyTuple is None:
-                buyTuple = (0, 0, 0, 0, 0)
+        if buyTuple is None:
+            buyTuple = (0, 0, 0, 0, 0)
 
-            if sellTuple is None:
-                sellTuple =(0, 0, 0, 0, 0)
+        if sellTuple is None:
+            sellTuple =(0, 0, 0, 0, 0)
 
-            if idTuple is None:
-                logging.warning('Id: {}, region: {}'.format(item, region))
+        returnTuple = (buyTuple + sellTuple + idTuple)
 
-            returnTuple = (buyTuple + sellTuple + idTuple)
-
-            return returnTuple
-        except:
-            logging.error('>>>>> START OF TRACEBACK <<<<<')
-            logging.error('Error encountered during data processing: ')
-            logging.error('Following exception occured', exc_info=(traceback))
-            logging.error('>>>>> END OF TRACEBACK <<<<<')
-            pass
+        return returnTuple
 
     def checkID(self,argsTuple):
-        try:
-            tmpList = argsTuple[0]
-            regId = argsTuple[1]
-            if bool(tmpList):
-                buyResults = [item for item in tmpList if item['buy'] == True]
-                sellResults = [item for item in tmpList if item['buy'] == False]
-                buyResults = sorted(buyResults, key=lambda k: int(k['price']), reverse=True)
-                sellResults = sorted(sellResults, key=lambda k: int(k['price']), reverse=False)
-                return self.writeList(buyResults, sellResults,tmpList[0]['type'], regId)
-        except:
-            print('>>>>> START OF TRACEBACK <<<<<')
-            print('Error encountered during data processing: ')
-            traceback.print_exc()
-            print('>>>>> END OF TRACEBACK <<<<<')
-            pass
+        tmpList = argsTuple[0]
+        regId = argsTuple[1]
+        if bool(tmpList):
+            buyResults = [item for item in tmpList if item['buy'] == True]
+            sellResults = [item for item in tmpList if item['buy'] == False]
+            buyResults = sorted(buyResults, key=lambda k: int(k['price']), reverse=True)
+            sellResults = sorted(sellResults, key=lambda k: int(k['price']), reverse=False)
+            return self.writeList(buyResults, sellResults,tmpList[0]['type'], regId)
 
     #groups data retrieved from CREST api
     def groupData(self,jsonItems, regId):
@@ -115,10 +91,7 @@ class Miner(object):
         with concurrent.futures.ThreadPoolExecutor(int(self.poolSize)) as executor:
             future_to_data = {executor.submit(self.checkID, (list(item), regId)) for key, item in groupby(jsonItems['items'], lambda x: x['type'])}
             for future in concurrent.futures.as_completed(future_to_data):
-                try:
-                    self.tupleList.append(future.result())
-                except Exception as exc:
-                    logging.error('Somethign went wront with the processes')
+                self.tupleList.append(future.result())
             
     #get data from CREST api
     def mineData(self,regId):
@@ -131,11 +104,11 @@ class Miner(object):
 
         # start loop to get all data
         for x in range(1, pageCount + 1):
-                url = '{}?page={}'.format(self.base_url.format(regId), x)
-                resp = requests.get(url)
-                if resp.status_code != 200:
-                    raise ApiError('GET {} {}'.format(url, resp.status_code))
-                jsonItems['items'] = jsonItems['items'] + resp.json()['items']
+            url = '{}?page={}'.format(self.base_url.format(regId), x)
+            resp = requests.get(url)
+            if resp.status_code != 200:
+                raise ApiError('GET {} {}'.format(url, resp.status_code))
+            jsonItems['items'] = jsonItems['items'] + resp.json()['items']
         
         #(int(), int()) use tuple for multiple key values
         jsonItems['items'] = sorted(jsonItems['items'], key=lambda k: (int(k['type']),int(k['buy']),int(k['price'])))
