@@ -18,8 +18,6 @@ class Miner(object):
         self.config = configparser.ConfigParser()
         #self.config.read('../config/example.ini')
         self.config.read('../config/dev.ini')
-        #self.config.read('/home/jan/eve.beards.technology/python/miner/config/test.ini')
-        #self.config.read('/home/robertjan/eve.beards.technology/eve.beards.technology/python/miner/config/prod.ini')
 
         logging.basicConfig(filename=self.config.get('Logging', 'logLocation'),level=logging.INFO)
 
